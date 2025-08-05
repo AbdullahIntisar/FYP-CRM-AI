@@ -8,37 +8,51 @@ const userSchema = new mongoose.Schema(
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    phone: { type: String },
+    avatar: { type: String },
+
+    // Role-based access control
     role: {
       type: String,
-      enum: ["admin", "sales_manager", "sales_rep", "marketing_manager"],
+      enum: ["admin", "sales_manager", "sales_rep", "viewer"],
       default: "sales_rep",
     },
+
+    // Subscription system
+    subscriptionPlan: {
+      type: String,
+      enum: ["free", "silver", "gold"],
+      default: "free",
+    },
+    subscriptionExpiry: { type: Date },
+
+    // Business info
+    company: { type: String },
     department: { type: String },
     manager: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
+    // Status and tracking
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
-    permissions: [
-      {
-        module: String, // 'leads', 'tasks', 'reports', etc.
-        actions: [String], // ['read', 'write', 'delete', 'export']
-      },
-    ],
-    avatar: { type: String },
-    phone: { type: String },
     timezone: { type: String, default: "UTC" },
+
+    // Usage tracking for subscription limits
+    usageStats: {
+      aiRequestsThisMonth: { type: Number, default: 0 },
+      scrapingRequestsThisMonth: { type: Number, default: 0 },
+      leadsCreatedThisMonth: { type: Number, default: 0 },
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// Hash password before saving
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 12);
 });
 
-// Compare password method
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
