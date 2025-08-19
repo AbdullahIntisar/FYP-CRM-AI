@@ -293,7 +293,6 @@ export const forgotPassword = async (req, res) => {
         message: "No user found with this email",
       });
     }
-
     // In a real app, you'd send an email with reset token
     // For demo purposes, we'll just log it
     const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
